@@ -1,0 +1,11 @@
+include:
+  - path: ../catalogapi/compose.yaml
+  - path: ../usersapi/compose.yaml
+  - path: ../paymentsapi/compose.yaml
+  - path: ../notificationsapi/compose.yaml
+  
+
+networks:
+  microsservicos-net:
+    name: app-network
+    driver: bridge
