@@ -1,8 +1,8 @@
 include:
-  - path: ../catalogapi/compose.yaml
-  - path: ../usersapi/compose.yaml
-  - path: ../paymentsapi/compose.yaml
-  - path: ../notificationsapi/compose.yaml
+  - path: ../usersapi/docker-compose.yaml
+  - path: ../catalogapi/docker-compose.yaml
+  - path: ../paymentsapi/docker-compose.yaml
+  - path: ../notificationsapi/docker-compose.yaml
   
 
 networks:
