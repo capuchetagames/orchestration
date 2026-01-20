@@ -19,14 +19,14 @@ Todos os serviços são conectados através de uma rede compartilhada (`app-netw
 
 ```
 orchestration/
-├── docker-compose.yaml      # Configuração principal do Docker Compose
+├── docker-compose.yaml     # Configuração principal do Docker Compose
 ├── startall.sh             # Script para iniciar todos os serviços
 ├── downall.sh              # Script para parar todos os serviços
 ├── k6/                     # Testes de carga
-│   └── index.js           # Configuração de teste K6
+│   └── index.js            # Configuração de teste K6
 └── k8s/                    # Kubernetes deployment
-    ├── start-all.sh       # Script para deploy no Kubernetes
-    └── delete-all.sh      # Script para remover resources do Kubernetes
+    ├── start-all.sh        # Script para deploy no Kubernetes
+    └── delete-all.sh       # Script para remover resources do Kubernetes
 ```
 
 ### Estrutura de Pastas dos Projetos
@@ -170,19 +170,3 @@ export const options = {
 Miro com um workflow básico para interface gráfica:
 - [Acesse o board no Miro](https://miro.com/app/board/uXjVJ-g_ni8=/?share_link_id=452428393845)
 
-## 🛠️ Solução de Problemas
-
-### Containers não iniciam
-
-1. Verifique se todos os repositórios estão clonados na estrutura correta
-2. Verifique se as portas necessárias não estão em uso
-3. Limpe containers e volumes antigos: `docker system prune -a --volumes`
-
-### Erro de rede entre serviços
-
-Certifique-se de que a rede `app-network` foi criada corretamente:
-
-```bash
-docker network ls
-docker network inspect app-network
-```
