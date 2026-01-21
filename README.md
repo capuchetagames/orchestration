@@ -116,8 +116,6 @@ Este script irá:
 3. Iniciar o serviço de pagamentos
 4. Iniciar o serviço de notificações
 
-> **Nota:** O RabbitMQ é gerenciado através do `docker-compose.yaml` e será iniciado automaticamente ao executar `docker-compose up`.
-
 #### Parar Todos os Serviços
 
 ```bash
