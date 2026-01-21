@@ -153,7 +153,7 @@ O RabbitMQ é usado como message broker para comunicação assíncrona entre os 
 - **Usuário padrão:** admin
 - **Senha padrão:** admin
 
-> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose-rabbitmq.yaml` para configurar credenciais mais seguras.
+> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose-rabbitmq.yaml` e altere as variáveis `RABBITMQ_DEFAULT_USER` e `RABBITMQ_DEFAULT_PASS` para configurar credenciais mais seguras.
 
 ### Acessar o Management Console
 
