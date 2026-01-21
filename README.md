@@ -13,6 +13,10 @@ O projeto orquestra os seguintes microserviços:
 - **paymentsapi** - API de processamento de pagamentos
 - **notificationsapi** - API de notificações
 
+### Message Broker
+
+- **RabbitMQ** - Message broker para comunicação assíncrona entre microserviços
+
 Todos os serviços são conectados através de uma rede compartilhada (`app-network`), permitindo comunicação entre os microserviços.
 
 ## 📁 Estrutura do Projeto
@@ -22,6 +26,8 @@ orchestration/
 ├── docker-compose.yaml     # Configuração principal do Docker Compose
 ├── startall.sh             # Script para iniciar todos os serviços
 ├── downall.sh              # Script para parar todos os serviços
+├── rabbitmq/               # Configuração do RabbitMQ
+│   └── docker-compose-rabbitmq.yaml  # Docker Compose do RabbitMQ (incluído no principal)
 ├── k6/                     # Testes de carga
 │   └── index.js            # Configuração de teste K6
 └── k8s/                    # Kubernetes deployment
@@ -94,7 +100,7 @@ docker-compose up
 docker-compose down -v
 ```
 
-> **Nota:** A flag `-v` remove também os volumes, garantindo um ambiente limpo.
+> **Nota:** A flag `-v` remove também os volumes, garantindo um ambiente limpo. O RabbitMQ é automaticamente inicializado junto com os outros serviços.
 
 ### Opção 2: Usando Scripts Bash
 
@@ -135,6 +141,29 @@ cd k8s
 ```
 
 > **Nota:** Certifique-se de que seu cluster Kubernetes está configurado e o `kubectl` está apontando para o cluster correto.
+
+## 📨 RabbitMQ - Message Broker
+
+O RabbitMQ é usado como message broker para comunicação assíncrona entre os microserviços.
+
+### Configuração Padrão
+
+- **Porta AMQP:** 5672
+- **Porta Management Console:** 15672
+- **Usuário padrão:** admin
+- **Senha padrão:** admin
+
+> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose-rabbitmq.yaml` e altere as variáveis `RABBITMQ_DEFAULT_USER` e `RABBITMQ_DEFAULT_PASS` para configurar credenciais mais seguras.
+
+### Acessar o Management Console
+
+Após iniciar os serviços, acesse o console de gerenciamento do RabbitMQ:
+
+```
+http://localhost:15672
+```
+
+Use as credenciais padrão (admin/admin) para fazer login.
 
 ## 🧪 Testes de Carga com K6
 
