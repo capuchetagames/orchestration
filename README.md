@@ -27,7 +27,7 @@ orchestration/
 ├── startall.sh             # Script para iniciar todos os serviços
 ├── downall.sh              # Script para parar todos os serviços
 ├── rabbitmq/               # Configuração do RabbitMQ
-│   └── docker-compose-rabbitmq.yaml  # Docker Compose do RabbitMQ
+│   └── docker-compose-rabbitmq.yaml  # Docker Compose do RabbitMQ (incluído no principal)
 ├── k6/                     # Testes de carga
 │   └── index.js            # Configuração de teste K6
 └── k8s/                    # Kubernetes deployment
@@ -154,6 +154,8 @@ O RabbitMQ é usado como message broker para comunicação assíncrona entre os 
 - **Porta Management Console:** 15672
 - **Usuário padrão:** admin
 - **Senha padrão:** admin
+
+> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose-rabbitmq.yaml` para configurar credenciais mais seguras.
 
 ### Acessar o Management Console
 
