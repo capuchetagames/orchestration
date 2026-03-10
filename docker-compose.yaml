@@ -1,9 +1,10 @@
+
 include:
-  - path: ./rabbitmq/docker-compose-rabbitmq.yaml
+  - path: ./rabbitmq/docker-compose.yaml
   - path: ../usersapi/docker-compose.yaml
   - path: ../catalogapi/docker-compose.yaml
-  - path: ../paymentsapi/docker-compose.yaml
   - path: ../notificationsapi/docker-compose.yaml
+  - path: ../paymentsapi/docker-compose.yaml
   
 
 networks:
