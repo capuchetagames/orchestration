@@ -1,6 +1,7 @@
 
 include:
   - path: ./rabbitmq/docker-compose.yaml
+  - path: ./kong-konga/docker-compose.yaml
   - path: ../usersapi/docker-compose.yaml
   - path: ../catalogapi/docker-compose.yaml
   - path: ../notificationsapi/docker-compose.yaml
