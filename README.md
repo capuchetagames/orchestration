@@ -17,22 +17,40 @@ O projeto orquestra os seguintes microserviços:
 
 - **RabbitMQ** - Message broker para comunicação assíncrona entre microserviços
 
+### API Gateway
+
+- **Kong Gateway** - API Gateway para roteamento, autenticação e gerenciamento de APIs
+- **Konga** - Interface gráfica (UI) para gerenciar o Kong (versão community)
+
+### Monitoramento
+
+- **New Relic Infrastructure** - Agente de monitoramento de infraestrutura e containers
+
 Todos os serviços são conectados através de uma rede compartilhada (`app-network`), permitindo comunicação entre os microserviços.
 
 ## 📁 Estrutura do Projeto
 
 ```
 orchestration/
-├── docker-compose.yaml     # Configuração principal do Docker Compose
-├── startall.sh             # Script para iniciar todos os serviços
-├── downall.sh              # Script para parar todos os serviços
-├── rabbitmq/               # Configuração do RabbitMQ
-│   └── docker-compose-rabbitmq.yaml  # Docker Compose do RabbitMQ (incluído no principal)
-├── k6/                     # Testes de carga
-│   └── index.js            # Configuração de teste K6
-└── k8s/                    # Kubernetes deployment
-    ├── start-all.sh        # Script para deploy no Kubernetes
-    └── delete-all.sh       # Script para remover resources do Kubernetes
+├── docker-compose.yaml          # Configuração principal do Docker Compose (inclui todos os serviços)
+├── startall.sh                  # Script para iniciar todos os microserviços
+├── downall.sh                   # Script para parar todos os microserviços
+├── rabbitmq/                    # Configuração do RabbitMQ
+│   └── docker-compose.yaml      # Docker Compose do RabbitMQ (incluído no principal)
+├── kong/                        # Kong API Gateway (Enterprise) – standalone
+│   └── docker-compose.yml       # Kong + Postgres sem Konga
+├── kong-konga/                  # Kong API Gateway + Konga UI (versão community)
+│   ├── docker-compose.yaml      # Kong + Konga + Postgres (incluído no principal)
+│   └── docker-postgredb.sh      # Script auxiliar para subir Postgres standalone
+├── newrelic-infra/              # Monitoramento de infraestrutura com New Relic
+│   ├── docker-compose.yaml      # Agente New Relic Infrastructure (incluído no principal)
+│   ├── newrelic-infra.dockerfile # Dockerfile do agente
+│   └── newrelic-infra.yml       # Configuração da license key
+├── k6/                          # Testes de carga
+│   └── index.js                 # Configuração de teste K6
+└── k8s/                         # Kubernetes deployment
+    ├── start-all.sh             # Script para deploy no Kubernetes
+    └── delete-all.sh            # Script para remover resources do Kubernetes
 ```
 
 ### Estrutura de Pastas dos Projetos
@@ -153,7 +171,7 @@ O RabbitMQ é usado como message broker para comunicação assíncrona entre os 
 - **Usuário padrão:** admin
 - **Senha padrão:** admin
 
-> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose-rabbitmq.yaml` e altere as variáveis `RABBITMQ_DEFAULT_USER` e `RABBITMQ_DEFAULT_PASS` para configurar credenciais mais seguras.
+> **⚠️ Segurança:** As credenciais padrão devem ser alteradas em ambientes de produção. Edite o arquivo `rabbitmq/docker-compose.yaml` e altere as variáveis `RABBITMQ_DEFAULT_USER` e `RABBITMQ_DEFAULT_PASS` para configurar credenciais mais seguras.
 
 ### Acessar o Management Console
 
@@ -164,6 +182,108 @@ http://localhost:15672
 ```
 
 Use as credenciais padrão (admin/admin) para fazer login.
+
+## 🦍 Kong API Gateway + Konga
+
+O Kong é usado como API Gateway para centralizar o roteamento, autenticação e controle de acesso das APIs dos microserviços. O Konga fornece uma interface gráfica para gerenciar o Kong.
+
+### Versão Community (Kong + Konga)
+
+O diretório `kong-konga/` contém a configuração completa com Kong Gateway, Konga UI e PostgreSQL, integrada ao `docker-compose.yaml` principal.
+
+#### Inicializar Kong + Konga via docker compose principal
+
+```bash
+docker compose up
+```
+
+O stack do Kong/Konga será inicializado automaticamente junto com os demais serviços.
+
+#### Inicializar Kong + Konga de forma isolada
+
+```bash
+cd kong-konga
+docker compose up -d
+```
+
+#### Portas expostas
+
+| Serviço           | Porta  | Descrição                    |
+|-------------------|--------|------------------------------|
+| Kong Proxy HTTP   | 8000   | Entrada de requisições HTTP  |
+| Kong Proxy HTTPS  | 8443   | Entrada de requisições HTTPS |
+| Kong Admin API    | 8001   | API de administração HTTP    |
+| Kong Admin HTTPS  | 8444   | API de administração HTTPS   |
+| Kong Manager      | 8002   | Interface de gestão HTTP     |
+| Kong Manager TLS  | 8445   | Interface de gestão HTTPS    |
+| Konga UI          | 1337   | Interface gráfica do Konga   |
+| PostgreSQL        | 5432   | Banco de dados do Kong       |
+
+#### Acessar o Konga
+
+Após iniciar os serviços, acesse a interface do Konga:
+
+```
+http://localhost:1337
+```
+
+Na primeira vez, crie um usuário administrador e configure a conexão com o Kong Admin API:
+- **Kong Admin URL:** `http://kong-cp:8001`
+
+### Versão Enterprise (Kong standalone)
+
+O diretório `kong/` contém uma configuração alternativa para Kong Gateway Enterprise (sem Konga). Requer uma licença válida do Kong Enterprise.
+
+```bash
+# Prefira usar um arquivo .env para evitar expor a licença no histórico do shell
+echo "KONG_LICENSE_DATA='<seu-json-de-licença>'" > kong/.env
+
+cd kong
+docker compose up -d
+```
+
+> **⚠️ Nota:** A versão Enterprise exige a variável de ambiente `KONG_LICENSE_DATA` com a licença Kong válida. Sem ela, o serviço não iniciará corretamente. Evite exportar a licença diretamente no shell (`export KONG_LICENSE_DATA=...`), pois o valor ficará registrado no histórico do terminal.
+
+---
+
+## 📊 Monitoramento com New Relic Infrastructure
+
+O diretório `newrelic-infra/` contém a configuração do agente New Relic Infrastructure, que monitora o host e os containers Docker em tempo real.
+
+### Configuração
+
+Antes de inicializar, edite o arquivo `newrelic-infra/newrelic-infra.yml` e substitua a `license_key` pela sua chave de licença do New Relic:
+
+```yaml
+license_key: <sua-license-key-new-relic>
+```
+
+Como alternativa mais segura, utilize uma variável de ambiente no arquivo de configuração:
+
+```yaml
+license_key: ${NEW_RELIC_LICENSE_KEY}
+```
+
+E defina a variável em um arquivo `.env` ou via seu sistema de gerenciamento de segredos.
+
+> **⚠️ Segurança:** Nunca commite sua license key real no repositório. Utilize variáveis de ambiente ou um gerenciador de segredos em ambientes compartilhados.
+
+### Inicialização
+
+O agente é iniciado automaticamente pelo `docker-compose.yaml` principal:
+
+```bash
+docker compose up
+```
+
+Ou de forma isolada:
+
+```bash
+cd newrelic-infra
+docker compose up -d
+```
+
+---
 
 ## 🧪 Testes de Carga com K6
 
