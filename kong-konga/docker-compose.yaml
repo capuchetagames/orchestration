@@ -18,7 +18,7 @@ services:
     image: postgres:11.16           # Official Postgres image
     restart: on-failure              # Restart if the container fails
     volumes:
-      - kong_db_data:/var/lib/postgresql  # Mount the volume for persistent data
+      - kong_db_data:/var/lib/postgresql/data  # Mount the volume for persistent data
     networks:
       - microsservicos-net                  # Connect to the shared Kong network
     environment:
@@ -33,6 +33,22 @@ services:
     ports:
       - '5432:5432'                  # Optional: expose Postgres on localhost for debugging
 
+
+  kong-ee-database-init:
+      image: postgres:11.16
+      container_name: kong-ee-database-init
+      restart: on-failure
+      networks:
+        - microsservicos-net
+      depends_on:
+        kong-ee-database:
+          condition: service_healthy
+      environment:
+        PGPASSWORD: kong
+      command: >
+        sh -c "psql -h kong-ee-database -U kong -tc \"SELECT 1 FROM pg_database WHERE datname='konga'\" | grep -q 1
+        || psql -h kong-ee-database -U kong -c \"CREATE DATABASE konga;\""
+
   kong-bootstrap:
     image: '${GW_IMAGE:-kong/kong-gateway:3.13.0.1}'  # Kong Gateway image (default to latest version)
     container_name: kong-bootstrap
@@ -45,7 +61,9 @@ services:
     environment:
       <<: *kong-env                 # Reuse environment config from x-kong-config
       KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
-    command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
+    command: > 
+      sh -c "kong migrations bootstrap 2>/dev/null || kong migrations up" 
+      
 
   kong-cp:
     image: '${GW_IMAGE:-kong/kong-gateway:3.13.0.1}'  # Main Kong Gateway Control Plane (default to latest version)
@@ -78,13 +96,13 @@ services:
     container_name: kong-prepare
     command: "-c prepare -a postgres -u postgresql://kong:kong@kong-ee-database:5432/konga"
     restart: on-failure
-    links:
-      - kong-ee-database
+    # links:
+    #   - kong-ee-database
     networks:
       - microsservicos-net
     depends_on:
-      kong-cp:
-        condition: service_started
+      kong-ee-database-init:
+        condition: service_completed_successfully
 
   konga:
     image: pantsel/konga:latest
