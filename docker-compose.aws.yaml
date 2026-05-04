@@ -3,16 +3,16 @@ include:
   - path: ./rabbitmq/docker-compose.yaml
   - path: ./kong-konga/docker-compose.yaml
   
-  - path: ../usersapi/docker-compose.yaml
+  - path: ../usersapi/docker-compose.api.yaml
     env_file: ../usersapi/.env.aws
 
-  - path: ../catalogapi/docker-compose.yaml
+  - path: ../catalogapi/docker-compose.api.yaml
     env_file: ../catalogapi/.env.aws
 
-  - path: ../notificationsapi/docker-compose.yaml
+  - path: ../notificationsapi/docker-compose.api.yaml
     env_file: ../notificationsapi/.env.aws
 
-  - path: ../paymentsapi/docker-compose.yaml
+  - path: ../paymentsapi/docker-compose.api.yaml
     env_file: ../paymentsapi/.env.aws
 
   - path: ./newrelic-infra/docker-compose.yaml
