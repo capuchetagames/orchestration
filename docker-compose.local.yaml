@@ -1,0 +1,35 @@
+
+include:
+  - path: ./rabbitmq/docker-compose.yaml
+  - path: ./kong-konga/docker-compose.yaml
+
+  - path: ./dynamo-local/docker-compose.yaml
+  
+  - path:
+      - ../usersapi/docker-compose.local.yaml
+      - ../usersapi/docker-compose.api.yaml
+    env_file: ../usersapi/.env.local
+
+  - path:
+      - ../catalogapi/docker-compose.local.yaml
+      - ../catalogapi/docker-compose.api.yaml
+    env_file: ../catalogapi/.env.local
+
+  - path:
+      - ../notificationsapi/docker-compose.local.yaml
+      - ../notificationsapi/docker-compose.api.yaml
+    env_file: ../notificationsapi/.env.local
+
+  - path:
+      - ../paymentsapi/docker-compose.local.yaml
+      - ../paymentsapi/docker-compose.api.yaml
+    env_file: ../paymentsapi/.env.local
+
+
+  - path: ./newrelic-infra/docker-compose.yaml
+  
+
+networks:
+  microsservicos-net:
+    name: app-network
+    driver: bridge
