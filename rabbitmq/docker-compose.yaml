@@ -13,6 +13,12 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - microsservicos-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   rabbitmq_data:
