@@ -72,3 +72,18 @@ eksctl delete cluster --name cluster-fiapstore --region us-east-1
 
 > **Aviso sobre a Lambda:** 
 > O serviço de envio de e-mails (`EmailSenderLambda`) está hospedado via arquitetura *Serverless* e possui cobrança por uso. Como ele custa zero dólares enquanto não estiver processando envios, **não é necessário apagar a Lambda.**
+
+---
+
+## 🛠️ 5. Resolução de Problemas (Troubleshooting)
+
+### Erro ao Recriar: `AlreadyExistsException: Stack [eksctl-cluster-fiapstore-cluster] already exists`
+Esse erro acontece ao tentar criar o cluster caso a exclusão anterior tenha falhado parcialmente (o cluster EKS em si foi apagado, mas a stack do CloudFormation correspondente ficou "travada" com status `DELETE_FAILED`).
+
+**Solução:**
+Force a exclusão da stack residual via AWS CLI executando:
+```bash
+aws cloudformation delete-stack --stack-name eksctl-cluster-fiapstore-cluster --region us-east-1
+```
+Aguarde alguns segundos e, em seguida, você poderá rodar o comando de criação `eksctl create cluster -f eks-cluster.yaml` normalmente.
+
