@@ -6,6 +6,9 @@ metadata:
   region: us-east-1
   version: "1.34"
 
+addons:
+  - name: aws-ebs-csi-driver
+
 iam:
   serviceRoleARN: "arn:aws:iam::529976330083:role/LabRole"
 
