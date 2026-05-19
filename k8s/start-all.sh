@@ -19,6 +19,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 NS="fiapstore"
 
+# Load environment variables from root .env if it exists
+if [[ -f "${ROOT_DIR}/.env" ]]; then
+  echo "Loading variables from ${ROOT_DIR}/.env..."
+  set -a
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
 DOCKERHUB_USER="${DOCKERHUB_USER:-DOCKERHUB_USER}"
 
 echo "=========================================="
@@ -42,10 +50,36 @@ echo ""
 echo ">> [1/5] Creating namespace"
 kubectl apply -f "${SCRIPT_DIR}/namespace.yaml"
 
+# Garantir que exista uma StorageClass padrão no EKS (gp2)
+if kubectl get storageclass gp2 >/dev/null 2>&1; then
+  echo "Configurando gp2 como StorageClass padrão..."
+  kubectl annotate storageclass gp2 storageclass.kubernetes.io/is-default-class="true" --overwrite || true
+fi
+
 echo ""
-echo ">> [2/5] Deploying shared infrastructure (RabbitMQ)"
+echo ">> [2/5] Deploying shared infrastructure (RabbitMQ & Redis)"
 kubectl apply -f "${SCRIPT_DIR}/rabbitmq-deployment.yaml"
 kubectl apply -f "${SCRIPT_DIR}/rabbitmq-service.yaml"
+kubectl apply -f "${SCRIPT_DIR}/redis-deployment.yaml"
+kubectl apply -f "${SCRIPT_DIR}/redis-service.yaml"
+
+apply_secret_with_patch() {
+  local file="$1"
+  local prefix="$2"
+  if [[ "${prefix}" == "catalog" ]]; then
+    local apikey="${ELASTICSETTINGS__APIKEY:-}"
+    local cloudid="${ELASTICSETTINGS__CLOUDID:-}"
+    local usecloud="${ELASTICSETTINGS__USECLOUD:-true}"
+    
+    echo "  Applying catalog-secret with dynamic ElasticSettings placeholders..."
+    sed -e "s|ELASTICSETTINGS_APIKEY_PLACEHOLDER|${apikey}|g" \
+        -e "s|ELASTICSETTINGS_CLOUDID_PLACEHOLDER|${cloudid}|g" \
+        -e "s|ELASTICSETTINGS_USECLOUD_PLACEHOLDER|${usecloud}|g" \
+        "${file}" | kubectl apply -f -
+  else
+    kubectl apply -f "${file}"
+  fi
+}
 
 deploy_service() {
   local svc_dir="$1"
@@ -53,7 +87,7 @@ deploy_service() {
 
   echo ""
   echo ">> Deploying ${prefix} from ${svc_dir}"
-  kubectl apply -f "${svc_dir}/${prefix}-secret.yaml"
+  apply_secret_with_patch "${svc_dir}/${prefix}-secret.yaml" "${prefix}"
   kubectl apply -f "${svc_dir}/${prefix}-configmap.yaml"
   kubectl apply -f "${svc_dir}/${prefix}-db-deployment.yaml"
   kubectl apply -f "${svc_dir}/${prefix}-db-service.yaml"
