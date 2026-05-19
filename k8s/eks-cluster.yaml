@@ -1,0 +1,19 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: cluster-fiapstore
+  region: us-east-1
+  version: "1.34"
+
+iam:
+  serviceRoleARN: "arn:aws:iam::529976330083:role/LabRole"
+
+managedNodeGroups:
+  - name: standard-workers
+    instanceType: t3.medium
+    minSize: 2
+    maxSize: 4
+    desiredCapacity: 3
+    iam:
+      instanceRoleARN: "arn:aws:iam::529976330083:role/LabRole"
