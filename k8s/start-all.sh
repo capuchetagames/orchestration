@@ -70,11 +70,17 @@ apply_secret_with_patch() {
     local apikey="${ELASTICSETTINGS__APIKEY:-}"
     local cloudid="${ELASTICSETTINGS__CLOUDID:-}"
     local usecloud="${ELASTICSETTINGS__USECLOUD:-true}"
+    local aws_key="${LAMBDA_AWS_ACCESS_KEY_ID:-}"
+    local aws_secret="${LAMBDA_AWS_SECRET_ACCESS_KEY:-}"
+    local aws_region="${AWS_DEFAULT_REGION:-us-east-1}"
     
-    echo "  Applying catalog-secret with dynamic ElasticSettings placeholders..."
+    echo "  Applying catalog-secret with dynamic ElasticSettings & AWS credentials placeholders..."
     sed -e "s|ELASTICSETTINGS_APIKEY_PLACEHOLDER|${apikey}|g" \
         -e "s|ELASTICSETTINGS_CLOUDID_PLACEHOLDER|${cloudid}|g" \
         -e "s|ELASTICSETTINGS_USECLOUD_PLACEHOLDER|${usecloud}|g" \
+        -e "s|AWS_ACCESS_KEY_ID_PLACEHOLDER|${aws_key}|g" \
+        -e "s|AWS_SECRET_ACCESS_KEY_PLACEHOLDER|${aws_secret}|g" \
+        -e "s|AWS_DEFAULT_REGION_PLACEHOLDER|${aws_region}|g" \
         "${file}" | kubectl apply -f -
   else
     kubectl apply -f "${file}"
