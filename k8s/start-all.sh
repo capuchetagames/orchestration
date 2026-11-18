@@ -86,6 +86,7 @@ apply_secret() {
     --namespace "${NS}"
     --from-literal=ConnectionStrings__DefaultConnection="${conn_str}"
     --from-literal=Jwt__Key="${jwt_key}"
+    --from-literal=NEW_RELIC_LICENSE_KEY="${NEW_RELIC_LICENSE_KEY:-}"
     --from-literal=POSTGRES_USER="postgres"
     --from-literal=POSTGRES_PASSWORD="${pg_pass}"
     --from-literal=POSTGRES_DB="${pg_db}"
